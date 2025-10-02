@@ -77,9 +77,14 @@ app.use("/api/analytics", analyticsRoutes);
 // app.use(errorHandler);
 
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+  // Serve static files from the React app build directory
+  app.use(express.static(path.join(__dirname, "../frontend/dist"), {
+    maxAge: '1y',
+    etag: false
+  }));
 
-  app.get("*", (req, res) => {
+  // Catch-all handler: send back React's index.html file for any non-API routes
+  app.get(/^(?!\/api).*/, (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
   });
 }

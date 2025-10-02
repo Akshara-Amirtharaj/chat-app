@@ -156,13 +156,28 @@ chat-app/
 
 4. **Start the application**
    
-   **Development Mode:**
+   **Easy Start (Recommended):**
+   ```bash
+   # PowerShell (Recommended)
+   .\start-servers.ps1
+   
+   # Or double-click start-servers.bat
+   start-servers.bat
+   ```
+   
+   **Manual Start:**
    ```bash
    # Start backend (from backend directory)
    npm run dev
    
    # Start frontend (from frontend directory)
    npm run dev
+   ```
+   
+   **Stop Servers:**
+   ```bash
+   # Double-click stop-servers.bat or run in terminal
+   stop-servers.bat
    ```
    
    **Production Mode:**
