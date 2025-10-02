@@ -1,5 +1,9 @@
 import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
+import Workspace from "../models/workspace.model.js";
+import Message from "../models/message.model.js";
+import Invite from "../models/invite.model.js";
+import Task from "../models/task.model.js";
 import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
 
@@ -53,7 +57,7 @@ export const login = async (req, res) => {
   try {
     const user = await User.findOne({ email });
 
-    if (!user) {
+    if (!user || user.deletedAt) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
@@ -122,11 +126,98 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-export const checkAuth = (req, res) => {
+export const checkAuth = async (req, res) => {
   try {
-    res.status(200).json(req.user);
+    const user = await User.findById(req.user._id)
+      .populate('workspaceMemberships.workspaceId', 'name description')
+      .select('-password -emailVerificationToken -passwordResetToken');
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Return user data with workspace memberships
+    res.status(200).json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      profilePic: user.profilePic,
+      emailVerified: user.emailVerified,
+      workspaceMemberships: user.workspaceMemberships,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    });
   } catch (error) {
     console.log("Error in checkAuth controller", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Delete account
+export const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { password } = req.body;
+
+    // Verify password
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ message: "Incorrect password" });
+    }
+
+    // Remove user from all workspaces
+    await Workspace.updateMany(
+      { 'members.userId': userId },
+      { $pull: { members: { userId } } }
+    );
+
+    // Delete workspaces owned by user (or transfer ownership)
+    const ownedWorkspaces = await Workspace.find({ ownerId: userId });
+    for (const workspace of ownedWorkspaces) {
+      // Soft delete or transfer to another admin
+      workspace.isActive = false;
+      await workspace.save();
+    }
+
+    // Delete or anonymize messages
+    await Message.updateMany(
+      { senderId: userId },
+      { $set: { senderId: null, senderDeleted: true } }
+    );
+
+    // Delete invites
+    await Invite.deleteMany({ $or: [{ invitedBy: userId }, { email: user.email }] });
+
+    // Unassign tasks
+    await Task.updateMany(
+      { $or: [{ assigneeId: userId }, { createdBy: userId }] },
+      { $set: { assigneeId: null } }
+    );
+
+    // Delete user profile picture from cloudinary if exists
+    if (user.profilePic) {
+      const publicId = user.profilePic.split('/').pop().split('.')[0];
+      try {
+        await cloudinary.uploader.destroy(publicId);
+      } catch (error) {
+        console.log("Error deleting profile pic from cloudinary:", error);
+      }
+    }
+
+    // Delete user account
+    await User.findByIdAndDelete(userId);
+
+    // Clear cookie
+    res.cookie("jwt", "", { maxAge: 0 });
+
+    res.status(200).json({ message: "Account deleted successfully" });
+  } catch (error) {
+    console.log("Error in deleteAccount controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

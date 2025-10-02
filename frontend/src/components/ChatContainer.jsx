@@ -5,6 +5,7 @@ import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 import ImageViewer from "./ImageViewer";
+import TaskSuggestionToast from "./TaskSuggestionToast";
 import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 
@@ -17,10 +18,11 @@ const ChatContainer = () => {
     subscribeToMessages,
     unsubscribeFromMessages,
   } = useChatStore();
-  const { authUser } = useAuthStore();
+  const { authUser, socket } = useAuthStore();
   const messageEndRef = useRef(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [taskSuggestions, setTaskSuggestions] = useState(null);
 
   useEffect(() => {
     getMessages(selectedUser._id);
@@ -35,6 +37,23 @@ const ChatContainer = () => {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  // Listen for AI task suggestions
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleTaskSuggestions = (data) => {
+      setTaskSuggestions(data);
+      // Auto-hide after 30 seconds
+      setTimeout(() => setTaskSuggestions(null), 30000);
+    };
+
+    socket.on("taskSuggestions", handleTaskSuggestions);
+
+    return () => {
+      socket.off("taskSuggestions", handleTaskSuggestions);
+    };
+  }, [socket]);
 
   const handleImageClick = (imageUrl) => {
     setSelectedImage(imageUrl);
@@ -107,6 +126,14 @@ const ChatContainer = () => {
         isOpen={isImageViewerOpen}
         onClose={closeImageViewer}
       />
+
+      {/* AI Task Suggestions */}
+      {taskSuggestions && taskSuggestions.tasks && taskSuggestions.tasks.length > 0 && (
+        <TaskSuggestionToast
+          tasks={taskSuggestions.tasks}
+          onClose={() => setTaskSuggestions(null)}
+        />
+      )}
     </div>
   );
 };

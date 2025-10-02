@@ -21,6 +21,14 @@ export const protectRoute = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (user.deletedAt) {
+      return res.status(401).json({ 
+        message: "Account deactivated",
+        deletedAt: user.deletedAt,
+        canRecover: true
+      });
+    }
+
     req.user = user;
 
     next();

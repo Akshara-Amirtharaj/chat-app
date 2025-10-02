@@ -3,12 +3,12 @@ import Message from "../models/message.model.js";
 
 import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
+import { extractTasksFromMessage, shouldSuggestTask } from "../lib/aiTaskExtractor.js";
 
 export const getUsersForSidebar = async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
     const filteredUsers = await User.find({ _id: { $ne: loggedInUserId } }).select("-password");
-
     res.status(200).json(filteredUsers);
   } catch (error) {
     console.error("Error in getUsersForSidebar: ", error.message);
@@ -72,7 +72,33 @@ export const sendMessage = async (req, res) => {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
 
-    res.status(201).json(newMessage);
+    // AI Task Extraction - analyze message for potential tasks
+    let suggestedTasks = [];
+    if (text && text.length > 10) {
+      try {
+        const extractedTasks = extractTasksFromMessage(text, senderId, null);
+        suggestedTasks = extractedTasks.filter(task => shouldSuggestTask(task.confidence));
+        
+        // Send task suggestions to sender via socket
+        if (suggestedTasks.length > 0) {
+          const senderSocketId = getReceiverSocketId(senderId);
+          if (senderSocketId) {
+            io.to(senderSocketId).emit("taskSuggestions", {
+              messageId: newMessage._id,
+              tasks: suggestedTasks,
+            });
+          }
+        }
+      } catch (aiError) {
+        console.error("AI task extraction error:", aiError);
+        // Don't fail the message send if AI fails
+      }
+    }
+
+    res.status(201).json({ 
+      message: newMessage,
+      suggestedTasks: suggestedTasks.length > 0 ? suggestedTasks : undefined,
+    });
   } catch (error) {
     console.error("Error in sendMessage controller:", error);
     res.status(500).json({ error: "Internal server error", details: error.message });

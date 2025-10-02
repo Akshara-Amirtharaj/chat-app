@@ -28,28 +28,36 @@ const SignUpPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const success = validateForm();
 
     if (success === true) signup(formData);
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
+      <div className="absolute bottom-20 right-10 w-72 h-72 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{animationDelay: '1s'}}></div>
+      
       {/* left side */}
-      <div className="flex flex-col justify-center items-center p-6 sm:p-12">
-        <div className="w-full max-w-md space-y-8">
+      <div className="flex flex-col justify-center items-center p-6 sm:p-12 relative z-10">
+        <div className="w-full max-w-md space-y-6 bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border-2 border-white/60 animate-scale-in" style={{boxShadow: '0 0 40px rgba(139, 92, 246, 0.2)'}}>
           {/* LOGO */}
-          <div className="text-center mb-8">
-            <div className="flex flex-col items-center gap-2 group">
-              <div
-                className="size-12 rounded-xl bg-primary/10 flex items-center justify-center 
-              group-hover:bg-primary/20 transition-colors"
-              >
-                <MessageSquare className="size-6 text-primary" />
+          <div className="text-center mb-6">
+            <div className="flex flex-col items-center gap-3 group">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur-lg opacity-50 animate-pulse"></div>
+                <div className="relative bg-gradient-to-br from-purple-500 via-pink-500 to-indigo-500 p-4 rounded-2xl shadow-xl">
+                  <MessageSquare className="w-10 h-10 text-white" strokeWidth={2.5} />
+                </div>
               </div>
-              <h1 className="text-2xl font-bold mt-2">Create Account</h1>
-              <p className="text-base-content/60">Get started with your free account</p>
+              <h1 className="text-3xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 bg-clip-text text-transparent">
+                CollabWell
+              </h1>
+              <div>
+                <h2 className="text-2xl font-bold">Create Account</h2>
+                <p className="text-base-content/60 text-sm">Get started with your free account</p>
+              </div>
             </div>
           </div>
 
