@@ -11,42 +11,42 @@ dotenv.config();
 
 const clearDatabase = async () => {
   try {
-    console.log('🔌 Connecting to MongoDB...');
+    console.log('Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ Connected to MongoDB');
+    console.log('Connected to MongoDB');
 
     console.log('\n🗑️  Clearing all collections...\n');
 
     // Delete all documents from each collection
     const userCount = await User.countDocuments();
     await User.deleteMany({});
-    console.log(`✅ Deleted ${userCount} users`);
+    console.log(`Deleted ${userCount} users`);
 
     const workspaceCount = await Workspace.countDocuments();
     await Workspace.deleteMany({});
-    console.log(`✅ Deleted ${workspaceCount} workspaces`);
+    console.log(`Deleted ${workspaceCount} workspaces`);
 
     const channelCount = await Channel.countDocuments();
     await Channel.deleteMany({});
-    console.log(`✅ Deleted ${channelCount} channels`);
+    console.log(`Deleted ${channelCount} channels`);
 
     const messageCount = await Message.countDocuments();
     await Message.deleteMany({});
-    console.log(`✅ Deleted ${messageCount} messages`);
+    console.log(`Deleted ${messageCount} messages`);
 
     const inviteCount = await Invite.countDocuments();
     await Invite.deleteMany({});
-    console.log(`✅ Deleted ${inviteCount} invites`);
+    console.log(`Deleted ${inviteCount} invites`);
 
     const taskCount = await Task.countDocuments();
     await Task.deleteMany({});
-    console.log(`✅ Deleted ${taskCount} tasks`);
+    console.log(`Deleted ${taskCount} tasks`);
 
     console.log('\n✨ Database cleared successfully!\n');
     
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error clearing database:', error);
+    console.error('Error clearing database:', error);
     process.exit(1);
   }
 };

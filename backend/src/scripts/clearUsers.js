@@ -11,7 +11,7 @@ const clearAllUsers = async () => {
     // Delete all users
     const result = await User.deleteMany({});
     
-    console.log(`✅ Successfully deleted ${result.deletedCount} users from the database`);
+    console.log(`Successfully deleted ${result.deletedCount} users from the database`);
     
     // Close the database connection
     process.exit(0);

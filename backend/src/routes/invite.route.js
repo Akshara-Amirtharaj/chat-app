@@ -10,3 +10,5 @@ router.post('/:token/decline', protectRoute, declineInvite);
 
 export default router;
 
+
+

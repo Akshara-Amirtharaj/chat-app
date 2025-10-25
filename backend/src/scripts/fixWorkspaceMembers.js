@@ -1,44 +1,53 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import Workspace from '../models/workspace.model.js';
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const Workspace = require('../models/workspace.model');
 
 dotenv.config();
 
-const fixWorkspaceMembers = async () => {
+async function fixWorkspaceMembers() {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log('Connected to MongoDB');
+    console.log('MongoDB connection established');
 
-    // Update all workspace members to have status: 'ACTIVE' if they don't have a status
-    const result = await Workspace.updateMany(
+    // First pass: Update all workspace members to have status: 'ACTIVE' if status is missing
+    const updateResult = await Workspace.updateMany(
       { 'members.status': { $exists: false } },
       { $set: { 'members.$[].status': 'ACTIVE' } }
     );
-
-    console.log(`✅ Updated ${result.modifiedCount} workspaces`);
+    console.log(`Updated ${updateResult.modifiedCount} workspaces with bulk update`);
     
-    // Also ensure all members have the status field
+    // Second pass: Ensure all members have the status field (handles any edge cases)
     const workspaces = await Workspace.find({});
+    let fixedCount = 0;
+    
     for (const workspace of workspaces) {
-      let updated = false;
+      let needsUpdate = false;
+      
       workspace.members.forEach(member => {
         if (!member.status) {
           member.status = 'ACTIVE';
-          updated = true;
+          needsUpdate = true;
         }
       });
-      if (updated) {
+      
+      if (needsUpdate) {
         await workspace.save();
-        console.log(`✅ Fixed workspace: ${workspace.name}`);
+        fixedCount++;
+        console.log(`Fixed member status for workspace: ${workspace.name}`);
       }
     }
 
-    console.log('✅ All workspaces fixed!');
+    console.log(`Completed. Fixed member status in ${fixedCount} workspaces`);
     process.exit(0);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error fixing workspace members:', error.message);
     process.exit(1);
+  } finally {
+    await mongoose.disconnect();
   }
-};
+}
 
-fixWorkspaceMembers();
+// Run the function if this file is executed directly
+if (require.main === module) {
+  fixWorkspaceMembers();
+}

@@ -110,3 +110,5 @@ const Invite = mongoose.model('Invite', inviteSchema);
 
 export default Invite;
 
+
+

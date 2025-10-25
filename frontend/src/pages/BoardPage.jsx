@@ -205,29 +205,29 @@ const BoardPage = () => {
                       key={task._id}
                       draggable
                       onDragStart={(e) => handleDragStart(e, task)}
-                      className="card bg-gradient-to-br from-base-200 to-base-300 p-4 cursor-move hover:shadow-xl hover:scale-105 transition-all duration-200 group border border-base-300/50 rounded-xl"
+                      className="card bg-gradient-to-br from-base-200 to-base-300 p-4 cursor-move hover:shadow-xl hover:scale-105 transition-all duration-200 group border border-base-300/50 rounded-xl w-full"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                            {task.title}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-sm mb-2 flex items-start gap-2 break-words">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-1"></span>
+                            <span className="break-words overflow-wrap-anywhere">{task.title}</span>
                           </h4>
                           {task.description && (
-                            <p className="text-xs opacity-70 line-clamp-2 mb-3">{task.description}</p>
+                            <p className="text-xs opacity-70 line-clamp-2 mb-3 break-words">{task.description}</p>
                           )}
                           {task.assigneeId && (
                             <div className="flex items-center gap-2 mt-3">
-                              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-secondary text-primary-content flex items-center justify-center text-xs font-bold border-2 border-base-100 shadow-md">
+                              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-secondary text-primary-content flex items-center justify-center text-xs font-bold border-2 border-base-100 shadow-md flex-shrink-0">
                                 {task.assigneeId.fullName?.[0] || task.assigneeId.email?.[0] || "?"}
                               </div>
-                              <span className="text-xs opacity-60">{task.assigneeId.fullName || task.assigneeId.email}</span>
+                              <span className="text-xs opacity-60 truncate">{task.assigneeId.fullName || task.assigneeId.email}</span>
                             </div>
                           )}
                         </div>
                         <button
                           onClick={() => deleteTask(task._id)}
-                          className="btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-100 hover:bg-error/20 hover:text-error transition-all duration-200"
+                          className="btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-100 hover:bg-error/20 hover:text-error transition-all duration-200 flex-shrink-0"
                         >
                           <Trash2 className="w-3 h-3" />
                         </button>

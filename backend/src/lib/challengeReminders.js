@@ -37,7 +37,7 @@ export const sendChallengeReminders = async () => {
       }
     }
 
-    console.log(`✅ Sent reminders for ${challenges.length} challenges`);
+    console.log(`Sent reminders for ${challenges.length} challenges`);
   } catch (error) {
     console.error('Error sending challenge reminders:', error);
   }
@@ -47,9 +47,9 @@ export const sendChallengeReminders = async () => {
 export const scheduleChallengeReminders = () => {
   // Run every day at 9:00 AM
   cron.schedule('0 9 * * *', () => {
-    console.log('🔔 Running daily challenge reminders...');
+    console.log('Running daily challenge reminders...');
     sendChallengeReminders();
   });
 
-  console.log('✅ Challenge reminders scheduled for 9:00 AM daily');
+  console.log('Challenge reminders scheduled for 9:00 AM daily');
 };
